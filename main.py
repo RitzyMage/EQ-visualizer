@@ -2,6 +2,7 @@ from scipy.io import wavfile
 from scipy.fftpack import fft
 from numpy import average, absolute
 import numpy as np
+import math
 import cv2
 from cv2 import VideoWriter, VideoWriter_fourcc
 
@@ -10,12 +11,16 @@ RIGHT = 1
 WIDTH = 1920
 HEIGHT = 1080
 SAMPLE_LENGTH = 0.1
-NUM_CHANNELS = 200
+NUM_CHANNELS = 400
 FPS = 24
-BACKGROUND_COLOR = 20
-BAR_COLOR = (10, 100, 250)
+BACKGROUND_COLOR = 40
+BAR_COLOR = (10, 120, 250)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
-MAX_SAMPLE_VALUE = 1<<17
+MAX_SAMPLE_VALUE = 1<<20
+MIN_VISIBLE_HERTZ = 100
+MAX_VISIBLE_HERTZ = 20_000
+SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
+FREQUENCY_LOG_BASE = 1.005 # the EQ should not be linear, this is the base of the exponent we're using. should be >1
 
 rate, data = wavfile.read('test.wav')
 SECONDS = len(data) / rate
@@ -34,10 +39,26 @@ for frameIndex in range(FRAME_COUNT):
 
     channels = np.full(NUM_CHANNELS, 0, dtype=float)
     frequencies = absolute(fft(data[sampleStartIndex:sampleEndIndex,LEFT]))
-    frequencies = frequencies[:len(frequencies) // 2] #for some reason, the second half is just a mirror of the first half
-    sliceSize = int(len(frequencies) / NUM_CHANNELS)
-    for i in range(NUM_CHANNELS):
-        sliced = frequencies[(sliceSize * i):(sliceSize * (i+ 1))]
+    frequencies = frequencies[:len(frequencies) // 2] # ignore negative frequencies
+
+    frequencyPerIndex = len(frequencies) / rate
+    lowestAudibleIndex = int(frequencyPerIndex * MIN_VISIBLE_HERTZ)
+    highestAudibleIndex = int(frequencyPerIndex * MAX_VISIBLE_HERTZ)
+    audibleFrequencies = frequencies[lowestAudibleIndex:highestAudibleIndex]
+
+    numFrequencies = len(audibleFrequencies)
+    firstSliceSize = numFrequencies / ((FREQUENCY_LOG_BASE ** (NUM_CHANNELS) - 1) / (FREQUENCY_LOG_BASE - 1)) #did some math to figure this out
+    lastSliceSize = firstSliceSize
+    sliceRanges = [(0, lastSliceSize)]
+
+    for _ in range(NUM_CHANNELS - 1):
+        lastSliceSize = lastSliceSize * FREQUENCY_LOG_BASE
+        sliceStart = sliceRanges[len(sliceRanges) - 1][1]
+        sliceRanges.append((sliceStart, sliceStart + lastSliceSize))
+    sliceRanges = [(int(start), math.ceil(end)) for start, end in sliceRanges]
+
+    for i, (start, end) in enumerate(sliceRanges):
+        sliced = audibleFrequencies[start:end]
         channel = min(1, (float(average(sliced)) / MAX_SAMPLE_VALUE))
         channels[i] = channel
 
