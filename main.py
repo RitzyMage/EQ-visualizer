@@ -12,29 +12,30 @@ RIGHT = 1
 WIDTH = 1920
 HEIGHT = 1080
 SAMPLE_LENGTH = 0.1
-NUM_CHANNELS = 400
+NUM_CHANNELS = 40
 FPS = 24
 BACKGROUND_COLOR = 40
 BAR_COLOR = (10, 120, 250)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
-MAX_SAMPLE_VALUE = 1<<20
 MIN_VISIBLE_HERTZ = 100
 MAX_VISIBLE_HERTZ = 20_000
 SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
 FREQUENCY_LOG_BASE = 1.005 # the EQ should not be linear, this is the base of the exponent we're using. should be >1
 
-rate, data = wavfile.read('test.wav')
+rate, data = wavfile.read('SineC_EQ.wav')
+MAX_SAMPLE_VALUE = max(abs(data[:,0]))
 SECONDS = len(data) / rate
 FRAME_COUNT = int(FPS*SECONDS)
 
 fourcc = VideoWriter_fourcc(*'MP42')
 video = VideoWriter('./noise.avi', fourcc, float(FPS), (WIDTH, HEIGHT))
+import matplotlib.pyplot as plt
 
 channels = []
 
 ## initialize channels
 
-for frameIndex in range(FRAME_COUNT):
+for frameIndex in [20]:#range(FRAME_COUNT):
     time = frameIndex / FPS
     print('creating channel on frame', frameIndex, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
     sampleStartTime = time - (SAMPLE_LENGTH / 2)
@@ -42,14 +43,26 @@ for frameIndex in range(FRAME_COUNT):
     sampleStartIndex = max(0, int(sampleStartTime * rate))
     sampleEndIndex = min(int(sampleEndTime * rate), len(data))
 
+    frameData = data[sampleStartIndex:sampleEndIndex,LEFT] / MAX_SAMPLE_VALUE
+    print(frameData)
+    fig, ax = plt.subplots()
+
+    ax.plot(frameData, range(len(frameData)), linewidth=2.0)
+
+    ax.set(xlim=(-10, 10), xticks=np.arange(1, 8),
+        ylim=(0, len(frameData)), yticks=np.arange(1, 8))
+
+    plt.show()
+
     channelsForFrame = np.full(NUM_CHANNELS, 0, dtype=float)
-    frequencies = absolute(fft(data[sampleStartIndex:sampleEndIndex,LEFT]))
+    frequencies = absolute(fft(data[sampleStartIndex:sampleEndIndex,LEFT] / MAX_SAMPLE_VALUE))
     frequencies = frequencies[:len(frequencies) // 2] # ignore negative frequencies
 
     frequencyPerIndex = len(frequencies) / rate
     lowestAudibleIndex = int(frequencyPerIndex * MIN_VISIBLE_HERTZ)
     highestAudibleIndex = int(frequencyPerIndex * MAX_VISIBLE_HERTZ)
     audibleFrequencies = frequencies[lowestAudibleIndex:highestAudibleIndex]
+
 
     numFrequencies = len(audibleFrequencies)
     firstSliceSize = numFrequencies / ((FREQUENCY_LOG_BASE ** (NUM_CHANNELS) - 1) / (FREQUENCY_LOG_BASE - 1)) #did some math to figure this out
@@ -64,14 +77,13 @@ for frameIndex in range(FRAME_COUNT):
 
     for i, (start, end) in enumerate(sliceRanges):
         sliced = audibleFrequencies[start:end]
-        channel = min(1, (float(average(sliced)) / MAX_SAMPLE_VALUE))
+        channel = min(1, (float(average(sliced))))
         channelsForFrame[i] = channel
-    
     channels.append(channelsForFrame)
 
 ## process channels
 
-channels = ndimage.gaussian_filter(channels, sigma= 4)
+#channels = ndimage.gaussian_filter(channels, sigma= 4)
 
 # for i, channelsForFrame in enumerate(channels):
 #     time = i / FPS
@@ -80,14 +92,14 @@ channels = ndimage.gaussian_filter(channels, sigma= 4)
 
 ## output video
 
-for i, channelsForFrame in enumerate(channels):
-    time = i / FPS
-    print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
-    frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
-    for i, channel in enumerate(channelsForFrame):
-        cv2.rectangle(frame, (int(i * CHANNEL_WIDTH), HEIGHT), (int((i+1) * CHANNEL_WIDTH), HEIGHT - int(HEIGHT * channel)), BAR_COLOR, int(-1))
-    video.write(frame)
-video.release()
+# for i, channelsForFrame in enumerate(channels):
+#     time = i / FPS
+#     print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
+#     frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
+#     for i, channel in enumerate(channelsForFrame):
+#         cv2.rectangle(frame, (int(i * CHANNEL_WIDTH), HEIGHT), (int((i+1) * CHANNEL_WIDTH), HEIGHT - int(HEIGHT * channel)), BAR_COLOR, int(-1))
+#     video.write(frame)
+# video.release()
 
 
 

@@ -1,1 +1,1 @@
-ffmpeg -i noise.avi -i test.wav -map 0:0 -map 1:0 -c:v copy -c:a copy eq_test.avi
+ffmpeg -i noise.avi -i SineC_EQ.wav -map 0:0 -map 1:0 -c:v copy -c:a copy eq_test.avi -y
