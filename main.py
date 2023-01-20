@@ -47,10 +47,8 @@ for frameIndex in [20]:#range(FRAME_COUNT):
     print(frameData)
     fig, ax = plt.subplots()
 
-    ax.plot(frameData, range(len(frameData)), linewidth=2.0)
+    ax.plot(range(len(frameData)), frameData, linewidth=2.0)
 
-    ax.set(xlim=(-10, 10), xticks=np.arange(1, 8),
-        ylim=(0, len(frameData)), yticks=np.arange(1, 8))
 
     plt.show()
 
