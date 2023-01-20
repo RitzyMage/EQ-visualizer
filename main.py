@@ -44,11 +44,17 @@ for frameIndex in [20]:#range(FRAME_COUNT):
     sampleEndIndex = min(int(sampleEndTime * rate), len(data))
 
     frameData = data[sampleStartIndex:sampleEndIndex,LEFT] / MAX_SAMPLE_VALUE
-    print(frameData)
+    frameFourier = absolute(fft(frameData))
+    frequencyPerIndex = rate / len(frameData)
+    frameFourier = frameFourier[:len(frameFourier) // 2]
+    lowestAudibleIndex = int(MIN_VISIBLE_HERTZ / frequencyPerIndex)
+    highestAudibleIndex = int(MAX_VISIBLE_HERTZ / frequencyPerIndex)
+    print(len(frameFourier), rate, frequencyPerIndex, lowestAudibleIndex, highestAudibleIndex)
+    frameFourier = frameFourier[lowestAudibleIndex:highestAudibleIndex]
+
     fig, ax = plt.subplots()
 
-    ax.plot(range(len(frameData)), frameData, linewidth=2.0)
-
+    ax.plot(np.log(range(len(frameFourier))), frameFourier, linewidth=2.0)
 
     plt.show()
 
@@ -65,17 +71,18 @@ for frameIndex in [20]:#range(FRAME_COUNT):
     numFrequencies = len(audibleFrequencies)
     firstSliceSize = numFrequencies / ((FREQUENCY_LOG_BASE ** (NUM_CHANNELS) - 1) / (FREQUENCY_LOG_BASE - 1)) #did some math to figure this out
     lastSliceSize = firstSliceSize
-    sliceRanges = [(0, lastSliceSize)]
+    sliceRanges = [(numFrequencies - lastSliceSize, numFrequencies)]
 
     for _ in range(NUM_CHANNELS - 1):
         lastSliceSize = lastSliceSize * FREQUENCY_LOG_BASE
-        sliceStart = sliceRanges[len(sliceRanges) - 1][1]
-        sliceRanges.append((sliceStart, sliceStart + lastSliceSize))
+        sliceEnd = sliceRanges[len(sliceRanges) - 1][0]
+        sliceRanges.append((sliceEnd - lastSliceSize, sliceEnd))
     sliceRanges = [(int(start), math.ceil(end)) for start, end in sliceRanges]
 
-    for i, (start, end) in enumerate(sliceRanges):
+
+    for i, (start, end) in enumerate(sliceRanges[::-1]):
         sliced = audibleFrequencies[start:end]
-        channel = min(1, (float(average(sliced))))
+        channel =  (float(average(sliced)))
         channelsForFrame[i] = channel
     channels.append(channelsForFrame)
 
