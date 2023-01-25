@@ -34,7 +34,7 @@ video = VideoWriter(videoFilename, fourcc, float(FPS), (WIDTH, HEIGHT))
 import matplotlib.pyplot as plt
 
 channels = []
-channelMultipliers = np.power((np.arange(NUM_CHANNELS) / NUM_CHANNELS), 4) / 2 + 0.5
+channelMultipliers = 0.95 * (np.arange(NUM_CHANNELS) / NUM_CHANNELS) + 0.05
 
 ## initialize channels
 
@@ -69,7 +69,7 @@ for frameIndex in range(FRAME_COUNT):
 
 ## process channels
 
-channels = np.sqrt(channels)
+channels = np.power(channels, 0.4) 
 channels = ndimage.gaussian_filter(channels, sigma=0.75)
 
 # for i, channelsForFrame in enumerate(channels):
