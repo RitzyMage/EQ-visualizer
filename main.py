@@ -11,7 +11,7 @@ LEFT = 0
 RIGHT = 1
 WIDTH = 1920
 HEIGHT = 1080
-SAMPLE_LENGTH = 0.3
+SAMPLE_LENGTH = 0.2
 NUM_CHANNELS = 200
 FPS = 60
 BACKGROUND_COLOR = 40
@@ -68,7 +68,8 @@ for frameIndex in range(FRAME_COUNT):
 
 ## process channels
 
-channels = ndimage.gaussian_filter(channels, sigma=0.5)
+channels = np.sqrt(channels)
+channels = ndimage.gaussian_filter(channels, sigma=0.75)
 
 # for i, channelsForFrame in enumerate(channels):
 #     time = i / FPS
