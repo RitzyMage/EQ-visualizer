@@ -18,7 +18,7 @@ BACKGROUND_COLOR = 40
 BAR_COLOR = (10, 120, 250)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
 MIN_VISIBLE_HERTZ = 50
-MAX_VISIBLE_HERTZ = 40_000
+MAX_VISIBLE_HERTZ = 25_000
 SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
 
 audioFilename = sys.argv[1]
@@ -62,7 +62,7 @@ for frameIndex in range(FRAME_COUNT):
 
     for i, (start, end) in enumerate(sliceRanges):
         sliced = audibleFrequencies[start:end]
-        channel =  (float(average(sliced)))
+        channel =  (float(max(sliced)))
         channelsForFrame[i] = channel * channelMultipliers[i]
     channels.append(channelsForFrame)
 
