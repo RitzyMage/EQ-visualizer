@@ -11,17 +11,17 @@ LEFT = 0
 RIGHT = 1
 WIDTH = 1920
 HEIGHT = 1080
-SAMPLE_LENGTH = 0.1
-NUM_CHANNELS = 40
-FPS = 24
+SAMPLE_LENGTH = 0.3
+NUM_CHANNELS = 200
+FPS = 60
 BACKGROUND_COLOR = 40
 BAR_COLOR = (10, 120, 250)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
-MIN_VISIBLE_HERTZ = 100
-MAX_VISIBLE_HERTZ = 20_000
+MIN_VISIBLE_HERTZ = 50
+MAX_VISIBLE_HERTZ = 40_000
 SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
 
-rate, data = wavfile.read('SineC_EQ.wav')
+rate, data = wavfile.read('forestMushrooms_sin.wav')
 MAX_SAMPLE_VALUE = max(abs(data[:,0]))
 SECONDS = len(data) / rate
 FRAME_COUNT = int(FPS*SECONDS)
@@ -65,7 +65,7 @@ for frameIndex in range(FRAME_COUNT):
 
 ## process channels
 
-#channels = ndimage.gaussian_filter(channels, sigma= 4)
+channels = ndimage.gaussian_filter(channels, sigma=0.5)
 
 # for i, channelsForFrame in enumerate(channels):
 #     time = i / FPS
