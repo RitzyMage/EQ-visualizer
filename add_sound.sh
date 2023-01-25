@@ -1,1 +1,1 @@
-ffmpeg -i noise.avi -i forestMushrooms_sin.wav -map 0:0 -map 1:0 -c:v copy -c:a copy eq_test.avi -y
+ffmpeg -i "${1%.*}".avi -i $1 -map 0:0 -map 1:0 -c:v copy -c:a copy "${1%.*}"-final.avi -y

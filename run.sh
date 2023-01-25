@@ -1,1 +1,1 @@
-python3 ./main.py && ./add_sound.sh
+python3 ./main.py "$1" && ./add_sound.sh "$1"

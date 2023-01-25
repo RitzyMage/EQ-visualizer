@@ -3,9 +3,9 @@ from scipy.fftpack import fft
 from scipy import ndimage
 from numpy import average, absolute
 import numpy as np
-import math
 import cv2
 from cv2 import VideoWriter, VideoWriter_fourcc
+import sys
 
 LEFT = 0
 RIGHT = 1
@@ -21,13 +21,16 @@ MIN_VISIBLE_HERTZ = 50
 MAX_VISIBLE_HERTZ = 40_000
 SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
 
-rate, data = wavfile.read('forestMushrooms_sin.wav')
+audioFilename = sys.argv[1]
+videoFilename = audioFilename.replace(".wav", ".avi")
+
+rate, data = wavfile.read(audioFilename)
 MAX_SAMPLE_VALUE = max(abs(data[:,0]))
 SECONDS = len(data) / rate
 FRAME_COUNT = int(FPS*SECONDS)
 
 fourcc = VideoWriter_fourcc(*'MP42')
-video = VideoWriter('./noise.avi', fourcc, float(FPS), (WIDTH, HEIGHT))
+video = VideoWriter(videoFilename, fourcc, float(FPS), (WIDTH, HEIGHT))
 import matplotlib.pyplot as plt
 
 channels = []
