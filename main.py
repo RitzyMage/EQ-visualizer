@@ -34,6 +34,7 @@ video = VideoWriter(videoFilename, fourcc, float(FPS), (WIDTH, HEIGHT))
 import matplotlib.pyplot as plt
 
 channels = []
+channelMultipliers = np.power((np.arange(NUM_CHANNELS) / NUM_CHANNELS), 4) / 2 + 0.5
 
 ## initialize channels
 
@@ -62,7 +63,7 @@ for frameIndex in range(FRAME_COUNT):
     for i, (start, end) in enumerate(sliceRanges):
         sliced = audibleFrequencies[start:end]
         channel =  (float(average(sliced)))
-        channelsForFrame[i] = channel
+        channelsForFrame[i] = channel * channelMultipliers[i]
     channels.append(channelsForFrame)
 
 
