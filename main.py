@@ -83,8 +83,7 @@ for i, channelsForFrame in enumerate(channels):
     time = i / FPS
     print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
     frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
-    for i, channel in enumerate(channelsForFrame):
-        cv2.rectangle(frame, (int(i * CHANNEL_WIDTH), HEIGHT), (int((i+1) * CHANNEL_WIDTH), HEIGHT - int(HEIGHT * channel)), BAR_COLOR, int(-1))
+    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + [(int(i * CHANNEL_WIDTH), HEIGHT - int(HEIGHT * x)) for i, x in enumerate(channelsForFrame)] +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR)
     video.write(frame)
 video.release()
 
