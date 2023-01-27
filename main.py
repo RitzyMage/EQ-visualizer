@@ -1,6 +1,7 @@
 from scipy.io import wavfile
 from scipy.fftpack import fft
 from scipy import ndimage
+from scipy import interpolate
 from numpy import average, absolute
 import numpy as np
 import cv2
@@ -12,8 +13,8 @@ RIGHT = 1
 WIDTH = 1920
 HEIGHT = 1080
 SAMPLE_LENGTH = 0.2
-NUM_CHANNELS = 200
-FPS = 60
+NUM_CHANNELS = 100
+FPS = 24
 BACKGROUND_COLOR = 40
 BAR_COLOR = (10, 120, 250)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
@@ -70,20 +71,18 @@ for frameIndex in range(FRAME_COUNT):
 ## process channels
 
 channels = np.power(channels, 0.4) 
-channels = ndimage.gaussian_filter(channels, sigma=0.75)
+channels = ndimage.gaussian_filter(channels, sigma=1.25)
 
-# for i, channelsForFrame in enumerate(channels):
-#     time = i / FPS
-#     print('processing channel on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
-#     channels[i] = scipy.signal.convolve(channelsForFrame, [0.1, 0.2, 0.2, 0.4, 0.2, 0.2, 0.1])
 
 ## output video
 
 for i, channelsForFrame in enumerate(channels):
     time = i / FPS
+    splineInterpolation = interpolate.CubicSpline(np.arange(len(channelsForFrame)) * CHANNEL_WIDTH, channelsForFrame)
     print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
     frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
-    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + [(int(i * CHANNEL_WIDTH), HEIGHT - int(HEIGHT * x)) for i, x in enumerate(channelsForFrame)] +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR)
+    eqPoints = [(i, HEIGHT * (1- float(splineInterpolation(i)))) for i in range(WIDTH)]
+    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + eqPoints +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR)
     video.write(frame)
 video.release()
 
