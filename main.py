@@ -20,7 +20,7 @@ SPECTRUM_COLOR_1 = (102, 94, 8)
 SPECTRUM_COLOR_2 = (139, 161, 43)
 SPECTRUM_COLOR_3 = (107, 190, 50)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
-MIN_VISIBLE_HERTZ = 100
+MIN_VISIBLE_HERTZ = 150
 MAX_VISIBLE_HERTZ = 25_000
 SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
 
@@ -37,7 +37,7 @@ video = VideoWriter(videoFilename, fourcc, float(FPS), (WIDTH, HEIGHT))
 import matplotlib.pyplot as plt
 
 channels = []
-channelMultipliers = 0.95 * (np.arange(NUM_CHANNELS) / NUM_CHANNELS) + 0.05
+channelMultipliers = np.arctan(10 * ((np.arange(NUM_CHANNELS) / NUM_CHANNELS) - 0.5)) / 3.1415 + 0.5
 
 ## initialize channels
 
