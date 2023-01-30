@@ -15,11 +15,12 @@ HEIGHT = 1080
 SAMPLE_LENGTH = 0.2
 NUM_CHANNELS = 100
 FPS = 24
-BACKGROUND_COLOR = 40
-SPECTRUM_COLOR_1 = (8, 102, 53)
-SPECTRUM_COLOR_2 = (50, 190, 107)
+BACKGROUND_COLOR = 30
+SPECTRUM_COLOR_1 = (102, 94, 8)
+SPECTRUM_COLOR_2 = (139, 161, 43)
+SPECTRUM_COLOR_3 = (107, 190, 50)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
-MIN_VISIBLE_HERTZ = 50
+MIN_VISIBLE_HERTZ = 100
 MAX_VISIBLE_HERTZ = 25_000
 SAMPLE_HERTZ = 1 / SAMPLE_LENGTH
 
@@ -72,7 +73,8 @@ for frameIndex in range(FRAME_COUNT):
 ## process channels
 
 channelsBackground = ndimage.gaussian_filter(np.power(channels, 0.4) , sigma=1.25)
-channelsForeground = ndimage.gaussian_filter(np.power(channels, 0.7) , sigma=0.75)
+channelsMidground = ndimage.gaussian_filter(np.power(channels, 0.55) , sigma=1)
+channelsForeground = ndimage.gaussian_filter(np.power(channels, 0.9) , sigma=0.75)
 
 ## output video
 
@@ -88,7 +90,8 @@ for i in range(len(channels)):
     frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
 
     writeFrameFromChannels(frame, channelsBackground[i], SPECTRUM_COLOR_1)
-    writeFrameFromChannels(frame, channelsForeground[i], SPECTRUM_COLOR_2)
+    writeFrameFromChannels(frame, channelsMidground[i], SPECTRUM_COLOR_2)
+    writeFrameFromChannels(frame, channelsForeground[i], SPECTRUM_COLOR_3)
     
     video.write(frame)
 video.release()
