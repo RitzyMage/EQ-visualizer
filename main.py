@@ -16,7 +16,8 @@ SAMPLE_LENGTH = 0.2
 NUM_CHANNELS = 100
 FPS = 24
 BACKGROUND_COLOR = 40
-BAR_COLOR = (10, 120, 250)
+SPECTRUM_COLOR_1 = (8, 102, 53)
+SPECTRUM_COLOR_2 = (50, 190, 107)
 CHANNEL_WIDTH = WIDTH / NUM_CHANNELS
 MIN_VISIBLE_HERTZ = 50
 MAX_VISIBLE_HERTZ = 25_000
@@ -70,20 +71,25 @@ for frameIndex in range(FRAME_COUNT):
 
 ## process channels
 
-channels = np.power(channels, 0.4) 
-channels = ndimage.gaussian_filter(channels, sigma=1.25)
-
+channelsBackground = ndimage.gaussian_filter(np.power(channels, 0.4) , sigma=1.25)
+channelsForeground = ndimage.gaussian_filter(np.power(channels, 0.7) , sigma=0.75)
 
 ## output video
 
-for i, channelsForFrame in enumerate(channels):
-    time = i / FPS
-    print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
+def writeFrameFromChannels(frame, channelsForFrame, color):
     splineInterpolation = interpolate.CubicSpline(np.arange(len(channelsForFrame)) * CHANNEL_WIDTH, channelsForFrame)
-    frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
     interpolatedPoints = HEIGHT * (1 - splineInterpolation(np.arange(WIDTH)))
     eqPoints = list(enumerate(interpolatedPoints))
-    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + eqPoints +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR, lineType=cv2.LINE_AA)
+    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + eqPoints +  [[WIDTH, HEIGHT]], dtype=np.int32)], color, lineType=cv2.LINE_AA)
+
+for i in range(len(channels)):
+    time = i / FPS
+    print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
+    frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
+
+    writeFrameFromChannels(frame, channelsBackground[i], SPECTRUM_COLOR_1)
+    writeFrameFromChannels(frame, channelsForeground[i], SPECTRUM_COLOR_2)
+    
     video.write(frame)
 video.release()
 
