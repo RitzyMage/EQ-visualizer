@@ -82,7 +82,7 @@ for i, channelsForFrame in enumerate(channels):
     print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
     frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
     eqPoints = [(i, HEIGHT * (1- float(splineInterpolation(i)))) for i in range(WIDTH)]
-    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + eqPoints +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR)
+    cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + eqPoints +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR, lineType=cv2.LINE_AA)
     video.write(frame)
 video.release()
 
