@@ -78,10 +78,11 @@ channels = ndimage.gaussian_filter(channels, sigma=1.25)
 
 for i, channelsForFrame in enumerate(channels):
     time = i / FPS
-    splineInterpolation = interpolate.CubicSpline(np.arange(len(channelsForFrame)) * CHANNEL_WIDTH, channelsForFrame)
     print('creating video on frame', i, 'time:\t', int(time // 60), '\t:\t', int(time % 60))
+    splineInterpolation = interpolate.CubicSpline(np.arange(len(channelsForFrame)) * CHANNEL_WIDTH, channelsForFrame)
     frame = np.full((HEIGHT, WIDTH, 3), BACKGROUND_COLOR, dtype=np.uint8)
-    eqPoints = [(i, HEIGHT * (1- float(splineInterpolation(i)))) for i in range(WIDTH)]
+    interpolatedPoints = HEIGHT * (1 - splineInterpolation(np.arange(WIDTH)))
+    eqPoints = list(enumerate(interpolatedPoints))
     cv2.fillPoly(frame, [np.array([[int(0), int(HEIGHT)]] + eqPoints +  [[WIDTH, HEIGHT]], dtype=np.int32)], BAR_COLOR, lineType=cv2.LINE_AA)
     video.write(frame)
 video.release()
