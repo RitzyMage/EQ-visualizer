@@ -72,9 +72,9 @@ for frameIndex in range(FRAME_COUNT):
 
 ## process channels
 
-channelsBackground = ndimage.gaussian_filter(np.power(channels, 0.4) , sigma=1.25)
-channelsMidground = ndimage.gaussian_filter(np.power(channels, 0.55) , sigma=1)
-channelsForeground = ndimage.gaussian_filter(np.power(channels, 0.9) , sigma=0.75)
+channelsBackground = ndimage.gaussian_filter(np.power(channels, 0.4) , sigma=[1.0, 1.5])
+channelsMidground = ndimage.gaussian_filter(np.power(channels, 0.55) , sigma=[0.5, 1.0])
+channelsForeground = ndimage.gaussian_filter(np.power(channels, 0.9) , sigma=[0.25, 0.5])
 
 ## output video
 
